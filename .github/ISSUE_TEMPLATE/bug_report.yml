@@ -1,0 +1,59 @@
+name: Bug report
+description: Something in Sensfinder didn't work the way you expected
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Settings > About
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows build
+      description: Press Win+R, type winver
+      placeholder: "Windows 11 24H2 (26100.xxxx)"
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU and driver version
+      placeholder: "RTX 5070, driver 5xx.xx"
+  - type: input
+    id: game
+    attributes:
+      label: Game and resolution
+      placeholder: "Aim Lab / CS2, 2560x1440, fullscreen"
+  - type: input
+    id: mouse
+    attributes:
+      label: Mouse, DPI and polling rate
+      placeholder: "Razer Basilisk V3 Pro, 800 DPI, 1000 Hz"
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Start a Standard session\n2. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Diagnostics
+      description: In the app, Settings > Export diagnostics, then drag the zip here. Your user paths are scrubbed from it. It contains logs and settings only, no mouse data and no screenshots.

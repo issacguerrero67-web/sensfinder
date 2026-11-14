@@ -1,0 +1,58 @@
+name: release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Tag must match pyproject.toml
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pyproject.toml -Pattern '^version\s*=\s*"(.+)"').Matches[0].Groups[1].Value
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "tag ${{ github.ref_name }} != pyproject version $version" }
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Python dependencies
+        run: pip install ".[dev]"
+
+      - name: Engine tests
+        run: python -m pytest engine/tests -m "not windows"
+
+      - name: UI tests and build
+        working-directory: ui
+        run: |
+          npm ci
+          npm run test
+          npm run build
+
+      - name: Build exe, portable zip and installer
+        shell: pwsh
+        run: ./packaging/build.ps1 -SkipUi
+
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = "release-notes.md"
+          $inside = $false
+          Get-Content CHANGELOG.md | ForEach-Object {
+            if ($_ -match "^## \[$env:VERSION\]") { $inside = $true; return }
+            if ($inside -and $_ -match "^## \[") { $inside = $false }
+            if ($inside) { $_ }
+          } | Set-Content $notes
+          gh release create "${{ github.ref_name }}" (Get-ChildItem release -File).FullName --title "Sensfinder $env:VERSION" --notes-file $notes
