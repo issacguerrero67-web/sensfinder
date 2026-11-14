@@ -1,0 +1,28 @@
+# personal data: never commit
+data/
+data_backup_*/
+*.npz
+*.dem
+logs/
+*.log
+legacy/tests/fixtures/*.png
+legacy/data/
+
+# python
+.venv/
+__pycache__/
+.pytest_cache/
+.hypothesis/
+*.pyc
+*.egg-info/
+
+# node / ui
+node_modules/
+ui/dist/
+ui/test-results/
+ui/playwright-report/
+
+# build output
+build/
+dist/
+release/

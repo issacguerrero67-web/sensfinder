@@ -1,0 +1,28 @@
+[project]
+name = "sensfinder"
+version = "1.0.0"
+description = "Finds a mouse sensitivity range from per-flick mouse data. Local only."
+requires-python = ">=3.12,<3.13"
+license = { file = "LICENSE" }
+dependencies = [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "fastapi==0.163.0",
+    "uvicorn==0.54.0",
+    "python-multipart==0.0.33",
+    "pillow==13.0.0",
+    "rapidocr-onnxruntime==1.4.4",
+    "onnxruntime==1.31.1",
+    "watchdog==7.1.0",
+    "demoparser2==0.42.2",
+    "pywebview==6.2.1",
+    "pystray==0.19.5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "hypothesis==6.170.15", "httpx==0.28.1", "pyinstaller==6.22.3"]
+
+[tool.pytest.ini_options]
+testpaths = ["engine/tests"]
+addopts = "-q"
+markers = ["windows: needs a real Windows desktop session"]
