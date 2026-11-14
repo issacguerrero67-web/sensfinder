@@ -217,6 +217,10 @@ class Session:
                 if b.slot == "pick":
                     b.cm360 = self.pick_cm
 
+    def wrap(self) -> None:
+        """Finish now with the best estimate so far."""
+        self._wrap()
+
     def _wrap(self) -> None:
         if self.finished:
             return
