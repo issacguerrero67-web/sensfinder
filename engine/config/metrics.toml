@@ -1,0 +1,41 @@
+# Sensfinder v1.0 beta method. These are STARTING values, not validated.
+# Tune them in the Lab view ("Save as default" writes a copy to your data folder).
+
+[preprocess]
+grid_hz = 1000            # deltas are summed into fixed windows of 1/grid_hz seconds
+smooth_ms = 20            # moving-average window on speed
+
+[flick]
+onset_speed = 15.0        # cm/s: a flick starts when speed rises above this
+rest_speed = 3.0          # cm/s: below this the hand counts as still
+min_travel_cm = 1.5       # primary movement shorter than this is not a flick
+min_click_gap_ms = 120    # clicks closer than this to the previous click are ignored
+endpoint_frac = 0.10      # primary ends at first speed minimum below max(frac * vpeak, rest_speed)
+max_click_speed_frac = 0.30   # drop the flick if speed at the click exceeds this share of peak
+over_threshold = -0.03    # signed correction below this = overflick
+under_threshold = 0.03    # signed correction above this = underflick
+correction_prominence = 5.0   # cm/s prominence of a corrective speed bump
+max_flick_ms = 1500       # look back at most this far from a click
+
+[tracking]
+reversal_speed = 2.0      # cm/s both sides of a direction change
+band_lo_hz = 6.0
+band_hi_hz = 14.0
+window_ms = 500           # path-efficiency window
+min_window_path_cm = 0.2
+
+[estimator]
+bootstrap = 400
+min_flicks_per_level = 25
+min_display_halfwidth = 0.10   # never show a range narrower than +/-10% of cm/360
+balance_target = 0.0           # overflick rate minus underflick rate at the optimum
+weight_balance = 0.6           # weight of the balance signal vs median signed correction
+shake_pull = 0.3               # how far tracking shakiness may pull the pick inside the flick range
+locked_halfwidth = 0.12
+ok_halfwidth = 0.25
+locked_min_levels = 3
+locked_min_flicks = 60
+
+[fatigue]
+drop_pct_per_10min = 3.0
+min_weight = 0.5
