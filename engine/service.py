@@ -588,7 +588,7 @@ class Engine:
                 item["checked"] = checks.get(item["id"], False)
         retest = datetime.fromisoformat(latest["created_at"]) + timedelta(days=cards[0]["retest_days"] if cards else 7)
         return {"verdict_id": latest["id"], "created_at": latest["created_at"],
-                "retest_on": retest.isoformat(timespec="seconds"), "cards": cards}
+                "retest_on": retest.date().isoformat(), "cards": cards}      # a day, not a moment
 
     def plan_check(self, item_id: str, checked: bool) -> dict | None:
         latest = self.verdict()

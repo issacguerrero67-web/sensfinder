@@ -1,0 +1,38 @@
+# Changelog
+
+All notable changes to Sensfinder are recorded here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2026-11-14
+
+First desktop release. Replaces the Streamlit beta, which is kept unmodified in `legacy/`.
+
+### Added
+- Per-flick measurement: passive Raw Input mouse capture, flick segmentation from movement shape, overflick
+  and underflick rates, tracking shakiness, and a balance-point estimate with a bootstrap range.
+- Three tiers with enforced time budgets: Quick (~20 min), Standard (~45 min), Precision (up to 60 min).
+  One run per sens in the bracket stage, early finish when the result is locked in, hard cap at 60:00.
+- Session Coach with global hotkeys, a live countdown, a confidence meter and plain-language prompts.
+- Verdict with a best pick, a recommended range (never narrower than +/-10%), a confidence label, the
+  diagnosis and a three-card training plan. CS2 cfg generator (`exec sensfinder_sens`).
+- Demo mode: a full session against a simulated player, so the whole flow can be tried without playing.
+- Lab view: replay any stored run with detected flicks drawn on, and tune the thresholds live.
+- CS2 Demo Analyzer (beta) and the optional screenshot OCR panel carried over from the beta.
+- Marvel Rivals support behind a Calibrate game wizard, with a standing third-party-tools warning.
+- DPI wizard, first-run capture test, history and profiles, command palette, tray icon.
+- "Import beta data": reads the beta's `trials.csv` into the new database without touching the original.
+- Windows installer (Inno Setup), portable zip, SHA-256 file, and a tag-driven release workflow.
+
+### Changed
+- The recommendation is a range plus a best pick. The beta's single score-curve optimum is gone.
+- Data moved to `%LOCALAPPDATA%\Sensfinder\data`. The beta's `data\` folder is only read.
+
+### Removed
+- The beta's cloud OCR fallback. The app makes no network calls.
+
+### Known limitations
+- The method and its thresholds are not validated on people ("v1.0 beta method"). See `docs/METHOD.md`.
+- Builds are unsigned. Windows SmartScreen needs "More info" then "Run anyway".
+- Not verified: the Aim Lab ToS, Valve's and NetEase's position on raw-input listeners, whether CS2
+  `record` works offline and whether POV demos contain bot positions. See `docs/COMPLIANCE_TODO.md`.

@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/* Sensfinder design tokens. Everything visual reads from here. */
+:root {
+  color-scheme: dark;
+  --accent: #7c5cff;       /* user-changeable (settings.accent) */
+  --accent-strong: #6a4ee0; /* button fill: white text stays >= 4.5:1 */
+  --accent-soft: #a995ff;   /* accent-colored text on dark surfaces */
+  --dur-hover: 120ms;
+  --dur-state: 200ms;
+  --dur-screen: 320ms;
+  --dur-count: 600ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@theme {
+  --color-canvas: #0b0c0e;
+  --color-s1: #111316;
+  --color-s2: #171a1e;
+  --color-line: #23272d;
+  --color-text: #f2f4f7;
+  --color-muted: #9aa3af;
+  --color-faint: #6b7380; /* icons, rules, disabled only: 4.1:1 is too low for text */
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: #3ddc97;
+  --color-warn: #ffb020;
+  --color-danger: #ff5c6c;
+
+  --font-sans: "Inter Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "Cascadia Mono", Consolas, monospace;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-base: 15px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 24px;
+  --text-xl--line-height: 32px;
+  --text-2xl: 36px;
+  --text-2xl--line-height: 40px;
+  --text-hero: 64px;
+  --text-hero--line-height: 64px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 24px;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+input, textarea, pre, code, .selectable { user-select: text; }
+
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-feature-settings: "zero" 0; letter-spacing: -0.01em; }
+.label { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+button, a, [role="button"], input, select { transition: background-color var(--dur-hover) var(--ease), border-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease), opacity var(--dur-hover) var(--ease); }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
+/* quiet scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #2b3037 transparent; }
+
+/* pywebview drag region: the class is what pywebview looks for; app-region covers other shells */
+.pywebview-drag-region { -webkit-app-region: drag; }
+.no-drag { -webkit-app-region: no-drag; }
+
+@keyframes sf-fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes sf-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sf-pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes sf-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.screen-in { animation: sf-fade-up var(--dur-screen) var(--ease) both; }
+.fade-in { animation: sf-fade var(--dur-state) var(--ease) both; }
+.pop-in { animation: sf-pop var(--dur-state) var(--ease) both; }
+.pulse { animation: sf-pulse 1.6s ease-in-out infinite; }
+
+/* reduce motion: OS preference or settings.reduce_motion (class on <html>) */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
+/* uPlot: strip its chrome so traces sit directly on the canvas */
+.uplot, .uplot *, .uplot *::before, .uplot *::after { box-sizing: border-box; }
+.uplot { font-family: var(--font-mono); line-height: 1.5; width: min-content; }
+.u-wrap { position: relative; user-select: none; }
+.u-over, .u-under { position: absolute; }
+.u-under { overflow: hidden; }
+.uplot canvas { display: block; position: relative; width: 100%; height: 100%; }
+.u-legend, .u-cursor-x, .u-cursor-y, .u-cursor-pt, .u-select { display: none; }
+
+/* range input (Lab sliders, native element styled to the tokens) */
+input[type="range"] { -webkit-appearance: none; appearance: none; height: 32px; background: transparent; cursor: pointer; width: 100%; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: var(--color-line); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 999px; background: var(--color-text); border: 2px solid var(--color-canvas); box-shadow: 0 0 0 1px var(--color-line); }
+input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--accent); }
+input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
