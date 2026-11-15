@@ -72,10 +72,24 @@ def to_grid(trace: Trace, cfg: dict) -> Grid:
     return Grid(hz, np.cumsum(dx), np.cumsum(dy), vx, vy, np.hypot(vx, vy), clicks)
 
 
-def packet_rate(trace: Trace) -> float:
-    """Measured packets per second while the mouse is moving (90th percentile of busy 20 ms windows)."""
-    if len(trace.t) < 20:
+def polling_rate(t, dx, dy, min_windows: int = 5) -> float:
+    """The mouse's real report rate, in packets per second. 0 when it can't be measured yet.
+
+    A mouse only sends a packet when it has moved at least one count, so slow movement produces far fewer
+    packets than the polling rate (a 1000 Hz mouse dragged slowly at 800 DPI sends ~150/s). Only 20 ms
+    windows where packets average 2+ counts each are used: there the mouse is reporting on every poll.
+    """
+    t = np.asarray(t, dtype=float)
+    if len(t) < 20:
         return 0.0
-    bins = np.bincount((trace.t * 50).astype(np.int64))
-    busy = bins[bins > 0]
-    return float(np.percentile(busy, 90) * 50)
+    b = ((t - t.min()) * 50).astype(np.int64)
+    packets = np.bincount(b)
+    counts = np.bincount(b, weights=np.abs(np.asarray(dx, float)) + np.abs(np.asarray(dy, float)))
+    saturated = (packets >= 3) & (counts >= 2 * np.maximum(packets, 1))
+    if saturated.sum() < min_windows:
+        return 0.0
+    return float(np.median(packets[saturated]) * 50)
+
+
+def packet_rate(trace: Trace) -> float:
+    return polling_rate(trace.t, trace.dx, trace.dy)

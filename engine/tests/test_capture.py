@@ -65,6 +65,34 @@ def test_measure_and_live_trail():
     assert live["packet_rate"] == pytest.approx(1000, rel=0.1)
 
 
+def test_slow_movement_does_not_look_like_a_low_polling_rate():
+    """A 1000 Hz mouse dragged slowly only reports when it moves a count (~150 packets/s here). That used to
+    trigger the 'packet rate looks low' warning. Now slow movement leaves the rate unknown; a fast swipe
+    measures it, and the measured value sticks while the mouse rests."""
+    clock = VirtualClock()
+    rec = Recorder(clock)
+    for i in range(3000):                              # 3 s, a 1-count step every ~7 ms
+        clock.advance(0.001)
+        if i % 7 == 0:
+            rec.push(clock(), 1, 0)
+    assert rec.packet_rate() == 0.0
+    for _ in range(500):                               # fast swipe: 6 counts in every 1 ms report
+        clock.advance(0.001)
+        rec.push(clock(), 6, 1)
+    assert rec.packet_rate() == pytest.approx(1000, rel=0.05)
+    clock.advance(5.0)                                 # mouse at rest
+    assert rec.packet_rate() == pytest.approx(1000, rel=0.05)
+
+
+def test_a_genuinely_slow_mouse_is_still_caught():
+    clock = VirtualClock()
+    rec = Recorder(clock)
+    for _ in range(250):                               # 125 Hz mouse, fast swipe: 8 ms between reports
+        clock.advance(0.008)
+        rec.push(clock(), 40, 3)
+    assert rec.packet_rate() == pytest.approx(125, rel=0.25)
+
+
 def test_hotkey_parsing():
     assert parse("Ctrl+Alt+Enter") == (0x0003, 0x0D)
     assert parse("ctrl+alt+n") == (0x0003, ord("N"))

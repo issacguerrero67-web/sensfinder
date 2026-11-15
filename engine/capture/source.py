@@ -12,7 +12,7 @@ from collections import deque
 
 import numpy as np
 
-from ..analysis.trace import Trace
+from ..analysis.trace import Trace, polling_rate
 from ..units import CM_PER_INCH
 
 
@@ -26,6 +26,7 @@ class Recorder:
         self.paused = False
         self.paused_in_run = False
         self.packets = 0
+        self.last_rate = 0.0
 
     def push(self, t: float, dx: int, dy: int, click: bool = False) -> None:
         with self.lock:
@@ -88,12 +89,13 @@ class Recorder:
         return np.array(ev, dtype=float).reshape(-1, 3)
 
     def packet_rate(self) -> float:
+        """Last measured polling rate. It only updates during movement fast enough to measure (see
+        polling_rate), and keeps its value while the mouse rests instead of dropping to 0."""
         ev = self._recent(3.0)
-        if len(ev) < 20:
-            return 0.0
-        bins = np.bincount(((ev[:, 0] - ev[0, 0]) * 50).astype(np.int64))
-        busy = bins[bins > 0]
-        return float(np.percentile(busy, 90) * 50)
+        rate = polling_rate(ev[:, 0], ev[:, 1], ev[:, 2])
+        if rate:
+            self.last_rate = rate
+        return self.last_rate
 
     def live(self, dpi: float, seconds: float = 2.0, step: float = 0.01) -> dict:
         ev = self._recent(seconds)
