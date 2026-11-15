@@ -84,7 +84,7 @@ def default_settings() -> dict:
             "hotkeys": dict(HOTKEY_DEFAULTS), "accent": "#7C5CFF", "reduce_motion": False,
             "screenshots_dir": str(Path.home() / "Pictures" / "Screenshots"), "watch_screenshots": False,
             "ollama": {"enabled": False, "model": "qwen3-vl:8b", "allow_while_gaming": False},
-            "beta_dir": str(default_beta_dir())}
+            "beta_dir": str(default_beta_dir()), "demo_player": None}
 
 
 class DemoClock(VirtualClock):
@@ -714,11 +714,16 @@ class Engine:
             self.watcher = Watcher(s["screenshots_dir"], self.ingest_image).start()
 
     # ---------- demos (beta) ----------
-    def demo_analyze(self, path: str) -> dict:
+    def demo_analyze(self, path: str, player: str | None = None) -> dict:
+        """player: who to analyze. Picking one remembers it, so later demos default to you, not the top fragger."""
         from .demos.analyzer import analyze_file
-        res = analyze_file(path)
-        rid = self.db.insert("demos", created_at=now_iso(), file=Path(path).name, data=json.dumps(res))
-        return {"id": rid, "created_at": now_iso(), "file": Path(path).name, **res}
+        if player:
+            self.put_settings({"demo_player": player})
+        res = analyze_file(path, player or self.settings()["demo_player"])
+        res["path"] = str(Path(str(path).strip().strip('"')))
+        self.db.x("DELETE FROM demos WHERE json_extract(data, '$.path') = ?", (res["path"],))   # re-analysis replaces
+        rid = self.db.insert("demos", created_at=now_iso(), file=Path(res["path"]).name, data=json.dumps(res))
+        return {"id": rid, "created_at": now_iso(), "file": Path(res["path"]).name, **res}
 
     def demos(self) -> list[dict]:
         return [{"id": r["id"], "created_at": r["created_at"], "file": r["file"], **json.loads(r["data"])}

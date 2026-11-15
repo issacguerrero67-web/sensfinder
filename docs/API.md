@@ -212,7 +212,7 @@ interface Lab {
 | POST | `/api/screenshots/{id}/confirm` | `{fields}` | `Shot` |
 | DELETE | `/api/screenshots/{id}` | | `{ok: true}` |
 | GET | `/api/demos` | | `DemoResult[]` |
-| POST | `/api/demos/analyze` | `{path}` or multipart `file` | `DemoResult` |
+| POST | `/api/demos/analyze` | `{path, player?}` or multipart `file` | `DemoResult`. `player` picks who to analyze and is remembered (`settings.demo_player`); re-analyzing a path replaces its row |
 
 ```ts
 interface Shot { id: number; created_at: string; status: "saved" | "pending" | "duplicate" | "rejected";
@@ -223,5 +223,7 @@ interface Shot { id: number; created_at: string; status: "saved" | "pending" | "
 interface DemoResult { id: number; created_at: string; file: string; usable: boolean; message: string;
                        player: string | null; shots: number; flicks: number;
                        over_rate: number | null; under_rate: number | null; median_error_deg: number | null;
-                       notes: string[] }
+                       notes: string[];
+                       path?: string;                              // full path, for re-analysis
+                       players?: { name: string; shots: number }[] }  // everyone who fired, most first
 ```

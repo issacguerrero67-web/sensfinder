@@ -174,6 +174,8 @@ export interface DemoResult {
   player: string | null; shots: number; flicks: number;
   over_rate: number | null; under_rate: number | null; median_error_deg: number | null;
   notes: string[];
+  path?: string;                                   // full path, used to re-analyze as another player
+  players?: { name: string; shots: number }[];     // everyone who fired, most shots first
 }
 
 export interface PlanState { verdict_id: number; created_at: string; retest_on: string; cards: PlanCard[] }

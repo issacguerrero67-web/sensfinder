@@ -126,6 +126,42 @@ def test_demo_without_targets_is_a_clean_empty_state():
     assert not few["usable"] and "Not enough" in few["message"]
 
 
+def test_you_can_pick_the_player_and_teammates_are_not_targets():
+    frames, fires = synthetic_demo([2.0] * 8)
+    n = len(frames["me"]["tick"])
+    # a busier shooter standing beside "me", so by default the analyzer would pick them
+    frames["topfrag"] = {**{k: v.copy() for k, v in frames["me"].items()}, "y": np.full(n, 40.0)}
+    fires = fires + [(int(t), "topfrag") for t in frames["me"]["tick"][::3]]
+    res = analyze_frames(frames, fires)
+    assert res["player"] == "topfrag" and res["players"][0]["name"] == "topfrag"
+    assert analyze_frames(frames, fires, "me")["player"] == "me"
+    assert analyze_frames(frames, fires, "nobody")["player"] == "topfrag"          # unknown name falls back
+
+    # a teammate standing right where "me" aims would otherwise be the closest head
+    frames["mate"] = {**{k: v.copy() for k, v in frames["bot"].items()}, "x": np.full(n, 600.0)}
+    for name, team in (("me", 2), ("topfrag", 2), ("mate", 2), ("bot", 3)):
+        frames[name]["team"] = np.full(n, team)
+    with_teams = analyze_frames(frames, fires, "me")
+    assert with_teams["usable"] and with_teams["median_error_deg"] == pytest.approx(2.0, abs=0.05)
+    frames["bot"]["team"] = np.full(n, 2)                                            # everyone on one team
+    assert not analyze_frames(frames, fires, "me")["usable"]
+
+
+REAL_DEMO = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo\replays")
+
+
+@pytest.mark.windows
+@pytest.mark.skipif(not any(REAL_DEMO.glob("*.dem")) if REAL_DEMO.exists() else True, reason="no CS2 replay here")
+def test_a_real_matchmaking_replay_parses_with_teams():
+    from engine.demos.analyzer import load_demo
+    frames, fires = load_demo(next(REAL_DEMO.glob("*.dem")))
+    assert len(frames) >= 2 and len(fires) > 100
+    assert all("team" in f for f in frames.values())
+    names = analyze_frames(frames, fires)["players"]
+    res = analyze_frames(frames, fires, names[-1]["name"])                           # the quietest shooter
+    assert res["player"] == names[-1]["name"]
+
+
 def test_bad_demo_files_never_crash(tmp_path):
     junk = tmp_path / "broken.dem"
     junk.write_bytes(b"PBDEMS2\x00" + bytes(range(256)) * 20)

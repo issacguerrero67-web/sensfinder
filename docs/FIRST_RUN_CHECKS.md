@@ -25,22 +25,19 @@ from the background, so ~125/s is normal. In the simulator a Standard session re
 125 Hz as at 1000 Hz (see METHOD.md). The app only warns if the rate drops below about 100/s.
 If no packets arrive in fullscreen, try borderless windowed and note which one worked.
 
-## (b) Does CS2 `record` work in your offline practice, and do the demos contain bot positions?
+## (b) Can CS2 demos be used? Answered on 2026-11-14
 
-1. In CS2: Settings > Game > Enable Developer Console.
-2. Load your workshop map or an offline bot match. Open the console and type `record sftest`.
-3. Shoot bots for a minute. Type `stop`.
-4. The file should be `...\steamapps\common\Counter-Strike Global Offensive\game\csgo\sftest.dem`.
-5. In Sensfinder open Demo Analyzer, paste that path, Analyze.
+- [x] **`record` in an offline match: no.** CS2 printed `SV: Cheat command 'record' ignored.`, and it still
+      produced no file after `sv_cheats 1`. Offline POV recording isn't a usable source.
+- [x] **Matchmaking replays: yes.** A replay from `...\Counter-Strike Global Offensive\game\csgo\replays\` read
+      in about 13 s with all 10 players, 4,441 shots, and every player's position and team on every tick.
 
-Write down:
-- [ ] `record` produced a file in offline/workshop play: yes / no
-- [ ] The analyzer found other players or bots in it: yes / no (if no, it says so plainly)
+How to use one: watch a match from your CS2 match history so the replay downloads, then paste its path into
+Demo Analyzer and pick your name in the Player list (Sensfinder remembers it). Only enemies count as targets.
+Expect a few dozen flicks per match; on the test replay, 56 of 356 shots counted, with a median miss of 3.5°.
+That includes sprays and tracking moments that happen to pass the filters, so it stays supporting evidence.
 
-If the POV demo has no bot positions, record a GOTV demo on a local server instead: `tv_enable 1`, restart
-the map, `tv_record sftest`, play, `tv_stoprecord`. That guide is from CS:GO and is unverified for CS2.
-Also unverified: the `demoparser2` column names for your demo type. A wrong guess shows as "no usable data",
-never a crash. If that happens, send the diagnostics zip.
+Not tried: workshop maps (for example Aim Botz) and a local GOTV server (`tv_enable 1`, `tv_record`).
 
 ## (c) Does the Lab view's segmentation look right on one of your real runs?
 

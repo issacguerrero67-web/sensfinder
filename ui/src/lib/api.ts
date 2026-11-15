@@ -98,6 +98,6 @@ export const api = {
   shotConfirm: (id: number, fields: Shot["fields"]) => post<Shot>(`/api/screenshots/${id}/confirm`, { fields }),
   shotDelete: (id: number) => request<{ ok: true }>("DELETE", `/api/screenshots/${id}`),
   demos: () => get<DemoResult[]>("/api/demos"),
-  demoAnalyze: (path: string) => post<DemoResult>("/api/demos/analyze", { path }),
+  demoAnalyze: (path: string, player?: string) => post<DemoResult>("/api/demos/analyze", player ? { path, player } : { path }),
   demoUpload: (f: File) => post<DemoResult>("/api/demos/analyze", file(f)),
 };

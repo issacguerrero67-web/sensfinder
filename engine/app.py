@@ -167,7 +167,7 @@ def create_app(engine: Engine, token: str | None = None, ui_dir: Path | str | No
         body = json.loads(await request.body() or b"{}")
         if not body.get("path"):
             raise ApiError(400, "Give the path to a .dem file.")
-        return e.demo_analyze(body["path"])
+        return e.demo_analyze(body["path"], body.get("player") or None)
 
     # ---- the UI ----
     ui = Path(ui_dir) if ui_dir else None

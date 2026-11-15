@@ -4,8 +4,9 @@ For each shot the player fires, find the enemy head the crosshair was closest to
 or short of it the flick ended. 64-tick demos sample every ~15.6 ms, which is too coarse to see the shape of
 a flick, so this reports endpoint error only.
 
-Unverified (see docs/FIRST_RUN_CHECKS.md): whether `record` works in offline/workshop sessions, and whether
-POV demos carry other players' positions. If they don't, the result is a clean "no usable data".
+Checked on the owner's PC on 2026-11-14: matchmaking replays (game\\csgo\\replays\\) parse fine and carry every
+player's position, so they are the usable source. `record` in an offline match was refused as a cheat command,
+even after `sv_cheats 1`. Only enemies count as targets when the demo has team numbers.
 """
 from __future__ import annotations
 
@@ -25,21 +26,34 @@ NOTES = ["Beta. 64-tick demos are coarse, so this is endpoint error only.",
 
 def _empty(message: str, player: str | None = None, shots: int = 0) -> dict:
     return {"usable": False, "message": message, "player": player, "shots": shots, "flicks": 0,
-            "over_rate": None, "under_rate": None, "median_error_deg": None, "notes": NOTES}
+            "over_rate": None, "under_rate": None, "median_error_deg": None, "notes": NOTES, "players": []}
 
 
 def _wrap(deg):
     return (np.asarray(deg) + 180.0) % 360.0 - 180.0
 
 
+def shooters(fires: list[tuple[int, str]]) -> list[dict]:
+    """Everyone who fired, most shots first. The UI offers these so you can pick yourself."""
+    counts: dict[str, int] = {}
+    for _, n in fires:
+        counts[n] = counts.get(n, 0) + 1
+    return [{"name": n, "shots": c} for n, c in sorted(counts.items(), key=lambda x: -x[1])]
+
+
 def analyze_frames(frames: dict, fires: list[tuple[int, str]], player: str | None = None) -> dict:
-    """frames: {name: {"tick": int[], "x","y","z","pitch","yaw": float[], optional "ducking","alive": bool[]}}
-    fires: [(tick, name)] from weapon_fire. Pure function, tested with a synthetic fixture."""
-    if not fires:
+    """frames: {name: {"tick": int[], "x","y","z","pitch","yaw": float[], optional "ducking","alive": bool[],
+    optional "team": int[]}}. fires: [(tick, name)] from weapon_fire. Pure function, tested with a synthetic
+    fixture. `player` falls back to whoever fired most when it's missing or not in the demo."""
+    players = shooters(fires)
+    if player not in {p["name"] for p in players}:
+        player = players[0]["name"] if players else None
+    return {**_analyze(frames, fires, player), "players": players}
+
+
+def _analyze(frames: dict, fires: list[tuple[int, str]], player: str | None) -> dict:
+    if not fires or player is None:
         return _empty("No shots found in this demo.")
-    if player is None:
-        names = [n for _, n in fires]
-        player = max(set(names), key=names.count)
     me = frames.get(player)
     others = {n: f for n, f in frames.items() if n != player and len(f["tick"])}
     shots = [t for t, n in fires if n == player]
@@ -62,6 +76,8 @@ def analyze_frames(frames: dict, fires: list[tuple[int, str]], player: str | Non
             j = lookup[n].get(int(t))
             if j is None or ("alive" in f and not f["alive"][j]):
                 continue
+            if "team" in f and "team" in me and f["team"][j] == me["team"][i]:
+                continue                                       # teammates aren't targets
             head_z = f["z"][j] + (EYE_CROUCH if ("ducking" in f and f["ducking"][j]) else EYE_STAND)
             d = np.array([f["x"][j], f["y"][j], head_z]) - eye
             ideal_yaw = np.degrees(np.arctan2(d[1], d[0]))
@@ -104,7 +120,7 @@ def load_demo(path: str | Path):
     from demoparser2 import DemoParser
     p = DemoParser(str(path))
     try:
-        ticks = p.parse_ticks(["X", "Y", "Z", "pitch", "yaw", "is_alive", "ducking"])
+        ticks = p.parse_ticks(["X", "Y", "Z", "pitch", "yaw", "is_alive", "ducking", "team_num"])
     except Exception:
         ticks = p.parse_ticks(["X", "Y", "Z", "pitch", "yaw"])
     fire = p.parse_event("weapon_fire")
@@ -116,12 +132,14 @@ def load_demo(path: str | Path):
             f["alive"] = g["is_alive"].to_numpy(bool)
         if "ducking" in g:
             f["ducking"] = g["ducking"].to_numpy(bool)
+        if "team_num" in g:
+            f["team"] = g["team_num"].to_numpy(int)
         frames[str(name)] = f
     fires = [(int(t), str(n)) for t, n in zip(fire["tick"], fire["user_name"])] if len(fire) else []
     return frames, fires
 
 
-def analyze_file(path: str | Path) -> dict:
+def analyze_file(path: str | Path, player: str | None = None) -> dict:
     """Never raises on a bad file."""
     path = Path(str(path).strip().strip('"'))
     if not path.is_file():
@@ -135,6 +153,6 @@ def analyze_file(path: str | Path) -> dict:
             raise
         return _empty("Couldn't read that demo. It may be damaged or from an unsupported version.")
     try:
-        return analyze_frames(frames, fires)
+        return analyze_frames(frames, fires, player)
     except Exception:
         return _empty("The demo was read, but it has no usable aim data.")

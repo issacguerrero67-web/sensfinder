@@ -10,6 +10,19 @@ All notable changes to Sensfinder are recorded here. The format follows
 - The window couldn't be resized and didn't support Windows Snap (drag to a screen edge, Win+arrow keys,
   snap layouts). The app now uses the native Windows frame, tinted dark to match, instead of a borderless
   window with a custom title bar.
+- A false "Packet rate looks low" warning. Windows 11 gives background apps about 125 mouse updates a second
+  even from a 1000 Hz mouse (measured: 988/s in front, 122-130/s behind), and Sensfinder always listens from
+  the background. The rate is now measured only during fast movement, a 125 Hz mouse no longer reads as 150,
+  and the warning only appears below about 100/s.
+- Demo Analyzer measured aim against teammates' heads too. Only enemies count now.
+
+### Added
+- Demo Analyzer: pick which player to analyze (it used to take whoever fired most), and it remembers you.
+- The simulator recovery test now includes 125 Hz sessions, the rate Windows actually delivers while you play.
+
+### Changed
+- Demo Analyzer guide: use matchmaking replays. Recording offline practice with `record` was refused as a
+  cheat command in testing, even with `sv_cheats 1`.
 
 ## [1.0.1] - 2026-11-14
 
