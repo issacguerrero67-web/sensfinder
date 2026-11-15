@@ -56,12 +56,12 @@ If "clicked mid-motion" dominates, raise "Drop if still moving at click". If slo
 - [ ] Read the Aim Lab ToS/EULA (see COMPLIANCE_TODO.md). Research could not retrieve it.
 - [ ] Unsigned build: Windows SmartScreen will say "Windows protected your PC". Click **More info**, then
       **Run anyway**. Compare the file's SHA-256 with `SHA256SUMS.txt` first:
-      `Get-FileHash .\Sensfinder-1.0.0-setup.exe -Algorithm SHA256`
+      `Get-FileHash .\Sensfinder-1.0.1-setup.exe -Algorithm SHA256`
 
 ## The repo
 
-Done on 2026-11-14: the private repo is https://github.com/issacguerrero67-web/sensfinder and `v1.0.0` is
-released there with the portable zip, the installer and `SHA256SUMS.txt`.
+Done on 2026-11-14: the private repo is https://github.com/issacguerrero67-web/sensfinder. Use release
+`v1.0.1` or later (portable zip, installer, `SHA256SUMS.txt`); `v1.0.0` does not start.
 
 `gh` on this PC holds two accounts. Anything for this repo must run as the personal one:
 

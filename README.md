@@ -11,8 +11,11 @@ has been validated on people yet. Read [docs/METHOD.md](docs/METHOD.md) before t
 
 ## Quick start
 
-1. Download `Sensfinder-1.0.0-setup.exe` (or the portable zip) from the repo's Releases page.
-2. Check it: `Get-FileHash .\Sensfinder-1.0.0-setup.exe -Algorithm SHA256` must match `SHA256SUMS.txt`.
+1. Download the latest `Sensfinder-<version>-setup.exe` (or the portable zip) from the repo's
+   [Releases page](https://github.com/issacguerrero67-web/sensfinder/releases/latest). Don't use 1.0.0: it
+   freezes on "Starting up." and never loads.
+2. Check it: `Get-FileHash .\Sensfinder-1.0.1-setup.exe -Algorithm SHA256` must match `SHA256SUMS.txt`
+   from the same release.
 3. Run it. The build is unsigned, so Windows SmartScreen says "Windows protected your PC".
    Click **More info**, then **Run anyway**.
 4. First run: pick your game, confirm your DPI, enter your current sens, do the 5-second capture test.
