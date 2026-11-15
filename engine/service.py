@@ -49,6 +49,16 @@ SLIDERS = [  # (section, key, label, unit, min, max, step)
 ]
 
 
+# Windows 11 hands background raw-input listeners about 125 packets/s no matter what the mouse is set to
+# (measured 2026-11-14: 988/s in front vs 122-130/s behind, unchanged by power-throttling opt-outs).
+# Sensfinder always listens from the background, so ~125 is normal and only a rate below that is a problem.
+WINDOWS_BACKGROUND_CAP = 125.0
+
+
+def low_rate(rate: float, polling_hz: float) -> bool:
+    return bool(0 < rate < min(0.5 * polling_hz, 0.8 * WINDOWS_BACKGROUND_CAP))
+
+
 class ApiError(Exception):
     def __init__(self, status: int, detail: str):
         super().__init__(detail)
@@ -200,7 +210,7 @@ class Engine:
         return {"version": __version__, "method": "v1.0 beta method",
                 "capture": {"available": bool(self.source.available), "source": self.source.name,
                             "paused": self.recorder.paused, "packet_rate": round(rate, 1),
-                            "low_rate": bool(0 < rate < 0.5 * s["polling_hz"]), "error": self.source.error},
+                            "low_rate": low_rate(rate, s["polling_hz"]), "error": self.source.error},
                 "hotkeys": self.hotkeys.status(), "first_run_done": s["first_run_done"],
                 "beta": {"available": beta["available"], "rows": beta["rows"], "imported": beta["imported"]},
                 "session_active": self.session is not None, "data_dir": str(self.dir), "toasts": self.toasts}
@@ -401,7 +411,7 @@ class Engine:
             return None
         if res["packets"] == 0:
             return "No mouse movement was captured in that run."
-        if 0 < res["packet_rate"] < 0.5 * self.settings()["polling_hz"]:
+        if low_rate(res["packet_rate"], self.settings()["polling_hz"]):
             return f"Packet rate looked low ({res['packet_rate']:.0f}/s). Check the mouse's polling rate."
         if kind == "flick" and res["flick"]["n"] < 10:
             return f"Only {res['flick']['n']} flicks detected. Was that a flick task with clicks?"

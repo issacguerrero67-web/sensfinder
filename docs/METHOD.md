@@ -66,7 +66,7 @@ Each test session uses the real scheduler with randomised level order, a true op
 
 | Tier | Seeds | Pick within +/-15% of the true optimum | Bias | Spread (SD) | Over budget |
 |---|---|---|---|---|---|
-| Standard (40 at 1000 Hz + 20 at 4000 Hz) | 60 | **98.3%** | +5.0% | 4.5% | 0 |
+| Standard (30 at 1000 Hz + 15 at 4000 Hz + 20 at 125 Hz) | 65 | **98.5%** | +3.3% | 4.5% | 0 |
 | Quick | 40 | 95% | +5.4% | 5.4% | 0 |
 | Precision | 40 | 97% | +5.2% | 4.3% | 0 |
 
@@ -86,6 +86,12 @@ Read these numbers for what they are:
 
 ## Known weaknesses
 
+- **Windows gives Sensfinder about 125 mouse updates a second, not 1000.** Windows 11 slows raw mouse input
+  to apps in the background, and Sensfinder is always in the background while you play (measured
+  2026-11-14 on the owner's PC: 988/s in front, 122-130/s behind; power-throttling opt-outs made no
+  difference). Movement isn't lost, just delivered in bigger chunks every ~8 ms. In the simulator that costs
+  nothing measurable (25/25 Standard sessions within ±15% at 125 Hz), but a real flick at 125 Hz is only
+  a dozen or so samples, so check the Lab view on a real run.
 - **Balance may not be the optimum.** People often undershoot slightly on purpose. If you do, your best sens
   sits where underflicks are a bit more common than overflicks, and this method will read slightly fast.
   `estimator.balance_target` exists for that; it is 0 until there is evidence for another value.

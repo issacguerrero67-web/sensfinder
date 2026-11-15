@@ -17,7 +17,12 @@ Write down:
 - [ ] Measured packet rate: ______ per second (compare with your Synapse polling rate)
 - [ ] Hotkeys worked inside Aim Lab: yes / no
 
-If the rate is far below your polling rate, the app shows a warning. Analysis still works at 500-1000 Hz.
+**Expect about 125/s, not your mouse's 1000 Hz.** Measured on this PC on 2026-11-14: a Raw Input listener
+got 988 packets/s with its window in front but 122-130/s behind another window, with the mouse at 1000 Hz
+the whole time. Windows 11 slows mouse input to apps in the background, and opting out of power throttling
+(EcoQoS), raising timer resolution and high process priority did not change it. Sensfinder always listens
+from the background, so ~125/s is normal. In the simulator a Standard session recovers the optimum as well at
+125 Hz as at 1000 Hz (see METHOD.md). The app only warns if the rate drops below about 100/s.
 If no packets arrive in fullscreen, try borderless windowed and note which one worked.
 
 ## (b) Does CS2 `record` work in your offline practice, and do the demos contain bot positions?

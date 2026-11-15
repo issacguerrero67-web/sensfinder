@@ -121,7 +121,9 @@ def run_recovery(tier, n, hz, base_seed):
 
 
 def test_standard_session_recovers_the_optimum_within_15_percent():
-    errs = np.r_[run_recovery("standard", 40, 1000, 11), run_recovery("standard", 20, 4000, 12)]
+    # 125 Hz is what Windows 11 actually delivers to a background listener while the game is in front
+    errs = np.r_[run_recovery("standard", 30, 1000, 11), run_recovery("standard", 15, 4000, 12),
+                 run_recovery("standard", 20, 125, 13)]
     rate = float(np.mean(np.abs(errs) <= 0.15))
     print(f"\nrecovery standard: {rate:.3f} within 15% over {len(errs)} seeds, bias {errs.mean():+.3f}, sd {errs.std():.3f}")
     assert len(errs) >= 50 and rate >= 0.90

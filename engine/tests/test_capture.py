@@ -93,6 +93,13 @@ def test_a_genuinely_slow_mouse_is_still_caught():
     assert rec.packet_rate() == pytest.approx(125, rel=0.05)      # used to read 150
 
 
+def test_windows_background_cap_is_not_a_warning():
+    from engine.service import low_rate
+    assert not low_rate(125, 1000) and not low_rate(130, 1000)      # what Windows gives a background listener
+    assert low_rate(60, 1000)                                        # genuinely broken
+    assert not low_rate(0, 1000)                                     # not measured yet
+
+
 def test_hotkey_parsing():
     assert parse("Ctrl+Alt+Enter") == (0x0003, 0x0D)
     assert parse("ctrl+alt+n") == (0x0003, ord("N"))
