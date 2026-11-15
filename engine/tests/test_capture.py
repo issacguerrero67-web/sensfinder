@@ -90,7 +90,7 @@ def test_a_genuinely_slow_mouse_is_still_caught():
     for _ in range(250):                               # 125 Hz mouse, fast swipe: 8 ms between reports
         clock.advance(0.008)
         rec.push(clock(), 40, 3)
-    assert rec.packet_rate() == pytest.approx(125, rel=0.25)
+    assert rec.packet_rate() == pytest.approx(125, rel=0.05)      # used to read 150
 
 
 def test_hotkey_parsing():

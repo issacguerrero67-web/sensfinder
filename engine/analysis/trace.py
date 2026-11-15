@@ -85,10 +85,12 @@ def polling_rate(t, dx, dy, min_windows: int = 5) -> float:
     b = ((t - t.min()) * 50).astype(np.int64)
     packets = np.bincount(b)
     counts = np.bincount(b, weights=np.abs(np.asarray(dx, float)) + np.abs(np.asarray(dy, float)))
-    saturated = (packets >= 3) & (counts >= 2 * np.maximum(packets, 1))
+    saturated = (packets >= 1) & (counts >= 2 * np.maximum(packets, 1))
     if saturated.sum() < min_windows:
         return 0.0
-    return float(np.median(packets[saturated]) * 50)
+    # Total packets over total saturated time. A median of per-window counts read a 125 Hz mouse
+    # (2 or 3 packets per 20 ms) as 150, and dropping 1-2 packet windows hid slow mice entirely.
+    return float(packets[saturated].sum() / (saturated.sum() * 0.02))
 
 
 def packet_rate(trace: Trace) -> float:
