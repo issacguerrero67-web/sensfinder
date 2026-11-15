@@ -64,7 +64,7 @@ def test_token_is_required(engine):
 
 def test_status_and_settings(api):
     st = api.get("/api/status").json()
-    assert st["version"] == "1.0.1" and st["method"] == "v1.0 beta method"
+    assert st["version"] == "1.0.2" and st["method"] == "v1.0 beta method"
     assert st["capture"]["source"] == "fake" and len(st["hotkeys"]) == 4 and not st["first_run_done"]
     s = api.put("/api/settings", json={"sens": 1.2, "first_run_done": True, "hotkeys": {"run": "Ctrl+Alt+R"}}).json()
     assert s["sens"] == 1.2 and s["hotkeys"]["run"] == "Ctrl+Alt+R" and s["hotkeys"]["next"] == "Ctrl+Alt+N"

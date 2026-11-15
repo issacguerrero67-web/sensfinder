@@ -39,6 +39,7 @@ export function TitleBar({ status }: { status?: Status }) {
         <span>{state}</span>
         {cap && cap.packet_rate > 0 && !cap.paused && <span className="num">· {Math.round(cap.packet_rate)}/s</span>}
       </div>
+      {hasShell && <ResizeGrips />}
       {hasShell && (
         <div className="no-drag flex items-stretch">
           <button aria-label="Minimize" className="flex w-11 items-center justify-center text-muted hover:bg-s2 hover:text-text" onClick={() => w?.minimize?.()}><Minus size={15} aria-hidden /></button>
@@ -48,6 +49,45 @@ export function TitleBar({ status }: { status?: Status }) {
       )}
     </div>
   );
+}
+
+// A frameless WebView2 window has no native resize border, so the page draws its own grips on the edges
+// and asks the shell to resize. The opposite edge stays put (the shell fixes it).
+const GRIPS: { edge: string; cls: string; cursor: string }[] = [
+  { edge: "n", cls: "left-3 right-3 top-0 h-1.5", cursor: "ns-resize" },
+  { edge: "s", cls: "left-3 right-3 bottom-0 h-1.5", cursor: "ns-resize" },
+  { edge: "w", cls: "top-3 bottom-3 left-0 w-1.5", cursor: "ew-resize" },
+  { edge: "e", cls: "top-3 bottom-3 right-0 w-1.5", cursor: "ew-resize" },
+  { edge: "nw", cls: "left-0 top-0 size-3", cursor: "nwse-resize" },
+  { edge: "ne", cls: "right-0 top-0 size-3", cursor: "nesw-resize" },
+  { edge: "sw", cls: "left-0 bottom-0 size-3", cursor: "nesw-resize" },
+  { edge: "se", cls: "right-0 bottom-0 size-3", cursor: "nwse-resize" },
+];
+const MIN_W = 1100, MIN_H = 700;
+
+function ResizeGrips() {
+  const start = (edge: string) => (e: React.PointerEvent<HTMLDivElement>) => {
+    const resize = window.pywebview?.api?.resize;
+    if (e.button !== 0 || !resize) return;
+    e.preventDefault();
+    const el = e.currentTarget, x0 = e.screenX, y0 = e.screenY, w0 = window.outerWidth, h0 = window.outerHeight;
+    let frame = 0, want: [number, number] | null = null;
+    el.setPointerCapture(e.pointerId);
+    const move = (ev: PointerEvent) => {
+      const dx = ev.screenX - x0, dy = ev.screenY - y0;
+      const w = edge.includes("e") ? w0 + dx : edge.includes("w") ? w0 - dx : w0;
+      const h = edge.includes("s") ? h0 + dy : edge.includes("n") ? h0 - dy : h0;
+      want = [Math.max(MIN_W, Math.round(w)), Math.max(MIN_H, Math.round(h))];
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; if (want) resize(want[0], want[1], edge); });
+    };
+    const up = () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); };
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerup", up);
+  };
+  return <>{GRIPS.map((g) => (
+    <div key={g.edge} aria-hidden className={cx("no-drag fixed z-[100]", g.cls)} style={{ cursor: g.cursor }}
+         onPointerDown={start(g.edge)} />
+  ))}</>;
 }
 
 export const NAV: { name: RouteName; label: string; icon: React.ComponentType<any>; tag?: string; group: 0 | 1 | 2 }[] = [

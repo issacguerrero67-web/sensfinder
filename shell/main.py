@@ -69,6 +69,14 @@ class WindowApi:
     def close(self):
         self._window.destroy()
 
+    def resize(self, width, height, edge="se"):
+        """Drag-resize from the page's edge grips (a frameless window has no native border).
+        Dragging the left or top edge keeps the right or bottom edge where it is."""
+        from webview.window import FixPoint
+        fix = (FixPoint.EAST if "w" in edge else FixPoint.WEST) | (FixPoint.SOUTH if "n" in edge else FixPoint.NORTH)
+        self._window.resize(max(1100, int(width)), max(700, int(height)), fix)
+        self._maximized = False
+
 
 def start_tray(engine: Engine, window):
     """Tray icon with capture status. Returns the icon (or None if the tray can't start)."""
@@ -172,7 +180,13 @@ def main() -> int:
                     text = window.evaluate_js("document.querySelector('main') ? document.querySelector('main').innerText : ''")
                     if text and "Starting up" not in text and "Waiting for" not in text:
                         result = {"ok": True, "screen": text.strip().splitlines()[0][:80],
-                                  "bridge": bool(window.evaluate_js("!!(window.pywebview && window.pywebview.api && window.pywebview.api.minimize)"))}
+                                  "bridge": bool(window.evaluate_js("!!(window.pywebview && window.pywebview.api && window.pywebview.api.minimize)")),
+                                  "grips": window.evaluate_js("document.querySelectorAll('[style*=resize]').length")}
+                        before = window.evaluate_js("window.outerWidth")      # the edge grips' resize path works
+                        window.evaluate_js("window.pywebview.api.resize(window.outerWidth + 120, window.outerHeight, 'w')")
+                        time.sleep(1.0)
+                        result["resized"] = window.evaluate_js("window.outerWidth") - before
+                        result["ok"] = bool(result["bridge"] and result["grips"] == 8 and result["resized"] > 60)
                         break
             except Exception as e:
                 result["error"] = repr(e)

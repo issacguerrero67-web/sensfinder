@@ -1,8 +1,13 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to Sensfinder are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.2] - 2026-11-14
+
+### Fixed
+- The window couldn't be resized. A frameless window on Windows has no native resize border, so the app now draws its own grips on all four edges and corners.
 
 ## [1.0.1] - 2026-11-14
 
