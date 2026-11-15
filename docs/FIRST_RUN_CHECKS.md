@@ -58,21 +58,17 @@ If "clicked mid-motion" dominates, raise "Drop if still moving at click". If slo
       **Run anyway**. Compare the file's SHA-256 with `SHA256SUMS.txt` first:
       `Get-FileHash .\Sensfinder-1.0.0-setup.exe -Algorithm SHA256`
 
-## The one blocked step: the private GitHub repo
+## The repo
 
-The build stopped at this step because `gh` is signed in as `issacg-dev-macmtn`, and the repo must be
-created under `issacguerrero67-web`. Everything is committed locally. To finish:
+Done on 2026-11-14: the private repo is https://github.com/issacguerrero67-web/sensfinder and `v1.0.0` is
+released there with the portable zip, the installer and `SHA256SUMS.txt`.
+
+`gh` on this PC holds two accounts. Anything for this repo must run as the personal one:
 
 ```powershell
-gh auth login                       # choose GitHub.com, HTTPS, and sign in as issacguerrero67-web
-gh api user --jq .login             # must print issacguerrero67-web
-cd C:\Users\you\Documents\projects\sensfinder
-gh repo create issacguerrero67-web/sensfinder --private --source . --remote origin --push
-git push origin v1.0.0
-gh release create v1.0.0 (Get-ChildItem release -File).FullName --title "Sensfinder 1.0.0" --notes "See CHANGELOG.md"
+gh api user --jq .login                          # must print issacguerrero67-web
+gh auth switch --user issacguerrero67-web        # if it doesn't
 ```
-
-If you have both accounts in `gh`, `gh auth switch --user issacguerrero67-web` does the first step.
 
 Inviting a tester (private repo, so they need to be a collaborator and signed in to download):
 

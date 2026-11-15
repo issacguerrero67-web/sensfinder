@@ -100,8 +100,9 @@ truth; these are the places where it left a choice open or two instructions pull
 
 ## Repo
 
-37. **The repo step is blocked on the GitHub login.** `gh` is signed in as `issacg-dev-macmtn`, not
-    `issacguerrero67-web`. The spec says to stop that step and document it, so no repo was created and
-    nothing was pushed. The exact commands are in FIRST_RUN_CHECKS.md.
+37. **The repo step waited for the right GitHub login.** `gh` was signed in as a different account, so the
+    step was stopped and documented as the spec says. Once `issacguerrero67-web` was signed in, the private
+    repo was created, `main` and `v1.0.0` pushed, and the release published by hand from the local build.
+    The release workflow now leaves an existing release alone, so a hand-published tag and CI don't collide.
 38. **Beta OCR fixtures are not committed.** They are your Aim Lab results screenshots; `.gitignore` excludes
     them and the OCR test skips when they are absent.
