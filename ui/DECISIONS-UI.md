@@ -1,6 +1,6 @@
 # UI decisions (Sensfinder v1.0)
 
-Non-obvious choices made while building `ui/`. SPEC.md wins over the research file; docs/API.md is the contract.
+Non-obvious choices made while building `ui/`. docs/API.md is the contract.
 
 ## Stack and structure
 - Pinned exactly (npm registry, 2026-11-14): react 19.3.1, react-dom 19.3.1, vite 8.3.8, typescript 7.0.2, tailwindcss 4.3.5,

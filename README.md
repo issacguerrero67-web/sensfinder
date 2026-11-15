@@ -12,9 +12,8 @@ has been validated on people yet. Read [docs/METHOD.md](docs/METHOD.md) before t
 ## Quick start
 
 1. Download the latest `Sensfinder-<version>-setup.exe` (or the portable zip) from the repo's
-   [Releases page](https://github.com/issacguerrero67-web/sensfinder/releases/latest). Don't use 1.0.0: it
-   freezes on "Starting up." and never loads.
-2. Check it: `Get-FileHash .\Sensfinder-1.0.1-setup.exe -Algorithm SHA256` must match `SHA256SUMS.txt`
+   [Releases page](https://github.com/issacguerrero67-web/sensfinder/releases/latest).
+2. Check it: `Get-FileHash .\Sensfinder-<version>-setup.exe -Algorithm SHA256` must match `SHA256SUMS.txt`
    from the same release.
 3. Run it. The build is unsigned, so Windows SmartScreen says "Windows protected your PC".
    Click **More info**, then **Run anyway**.
@@ -65,14 +64,7 @@ third-party tools, so use it at your own risk there. See [docs/COMPLIANCE_TODO.m
 
 ## For testers
 
-This is a private repo. Release downloads only work for invited collaborators who are signed in to
-GitHub; anonymous links will not work. The owner invites a tester with:
-
-```powershell
-gh api -X PUT repos/issacguerrero67-web/sensfinder/collaborators/<username>
-```
-
-Found a problem? See [CONTRIBUTING.md](CONTRIBUTING.md): Settings > Export diagnostics, then open a bug report.
+Anyone can download the latest release; no GitHub account is needed. Found a problem? See [CONTRIBUTING.md](CONTRIBUTING.md): Settings > Export diagnostics, then open a bug report.
 
 ## Build from source
 
@@ -86,7 +78,7 @@ powershell -File packaging\build.ps1      # exe + portable zip + installer + SHA
 ```
 
 Layout: `engine/` (Python: capture, analysis, session, API), `ui/` (React), `shell/` (pywebview window and
-tray), `packaging/`, `docs/`, `legacy/` (the beta, unmodified), `kit/` (the v1.0 spec and research).
+tray), `packaging/`, `docs/`.
 
 ## Docs
 
@@ -102,7 +94,7 @@ tray), `packaging/`, `docs/`, `legacy/` (the beta, unmodified), `kit/` (the v1.0
   GPU-contention warning, since a local vision model and a game compete for the same 12 GB.
 - **Clip analysis between rounds:** a few sampled frames after a round, as coaching hints only.
 - **Per-hero auto-tuning for Marvel Rivals.**
-- **Auto-update** (a private repo needs a token for release assets) and code signing.
+- **Auto-update** and code signing.
 - **Tauri shell** in place of pywebview. The UI already talks only to `http://127.0.0.1:<port>`.
 - **Resume a session after a restart.**
 

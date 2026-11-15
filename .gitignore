@@ -5,8 +5,10 @@ data_backup_*/
 *.dem
 logs/
 *.log
-legacy/tests/fixtures/*.png
-legacy/data/
+
+# kept on the owner's PC only, not part of the public repo
+legacy/
+kit/
 
 # python
 .venv/

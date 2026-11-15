@@ -4,6 +4,12 @@ All notable changes to Sensfinder are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-11-14
+
+### Changed
+- The repository is public. Releases can be downloaded without a GitHub account or an invite.
+- The old Streamlit beta and the original planning notes are no longer included in the repository.
+
 ## [1.0.2] - 2026-11-14
 
 ### Fixed
@@ -37,7 +43,7 @@ All notable changes to Sensfinder are recorded here. The format follows
 
 ## [1.0.0] - 2026-11-14
 
-First desktop release. Replaces the Streamlit beta, which is kept unmodified in `legacy/`.
+First desktop release. Replaces the earlier Streamlit beta (not part of this repo).
 
 ### Added
 - Per-flick measurement: passive Raw Input mouse capture, flick segmentation from movement shape, overflick

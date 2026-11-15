@@ -1,4 +1,4 @@
-"""Aimlabs results screenshot -> ParsedRun. Ported from the beta (legacy/sensfinder/ocr.py).
+"""Aimlabs results screenshot -> ParsedRun. Ported from the earlier beta.
 
 Layout-robust: locate label text boxes, take the value box directly above (stats row)
 or below (SCORE). No fixed pixel coordinates. RapidOCR on CPU; nothing leaves the machine.

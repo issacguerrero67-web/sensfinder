@@ -1,6 +1,6 @@
 [project]
 name = "sensfinder"
-version = "1.0.2"
+version = "1.0.3"
 description = "Finds a mouse sensitivity range from per-flick mouse data. Local only."
 requires-python = ">=3.12,<3.13"
 license = { file = "LICENSE" }

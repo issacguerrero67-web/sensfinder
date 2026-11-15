@@ -1,7 +1,7 @@
 # Decisions
 
-Non-obvious choices made while building v1.0, newest area last. The spec (`kit/SPEC.md`) is the source of
-truth; these are the places where it left a choice open or two instructions pulled in different directions.
+Non-obvious choices made while building v1.0, newest area last: the places where the plan left a choice open
+or two goals pulled in different directions.
 
 ## Data and safety
 
@@ -98,16 +98,16 @@ truth; these are the places where it left a choice open or two instructions pull
     shipped one is read-only once installed.
 33. **Score on the verdict chart** comes from screenshots saved during that session at each sens. It is a
     side series only and never enters the fit.
-34. **App icon is drawn in code** (`shell.main.make_icon`). Good enough
-    for v1.0 and no licence question.
-35. **The UI was built against `docs/API.md`** with a browser-side mock engine, in parallel with
-    the engine. UI-specific decisions are in `ui/DECISIONS-UI.md`.
+34. **App icon is drawn in code** (`shell.main.make_icon`). Good enough for v1.0 and no licence question.
+35. **The UI was built against `docs/API.md`** with a browser-side mock engine, in parallel with the engine.
+    UI-specific decisions are in `ui/DECISIONS-UI.md`.
 
 ## Repo
 
-37. **The repo step waited for the right GitHub login.** `gh` was signed in as a different account, so the
-    step was stopped and documented as the spec says. Once `issacguerrero67-web` was signed in, the private
-    repo was created, `main` and `v1.0.0` pushed, and the release published by hand from the local build.
-    The release workflow now leaves an existing release alone, so a hand-published tag and CI don't collide.
-38. **Beta OCR fixtures are not committed.** They are your Aim Lab results screenshots; `.gitignore` excludes
-    them and the OCR test skips when they are absent.
+37. **Public repo, proprietary licence.** The source is public so anyone can read it and download releases;
+    the licence stays "all rights reserved". The old Streamlit beta and the original planning notes are not
+    part of this repo.
+38. **Beta OCR fixtures are not committed.** They are Aim Lab results screenshots; `.gitignore` excludes them
+    and the OCR test skips when they are absent.
+39. **The release workflow leaves an existing release alone**, so a release published by hand and the tag's
+    CI run don't collide.

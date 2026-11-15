@@ -1,6 +1,6 @@
 # Testing Sensfinder
 
-Thanks for trying it. This is a private project with a small group of invited testers.
+Thanks for trying it. It's an early version, so feedback on real sessions is the most useful thing you can send.
 
 ## Sending feedback
 
