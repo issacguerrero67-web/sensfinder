@@ -2,8 +2,8 @@
 import * as React from "react";
 import { Dialog as RDialog } from "radix-ui";
 import {
-  Camera, ClipboardList, Crosshair, Film, FlaskConical, FolderOpen, History as HistoryIcon, Home as HomeIcon, Minus, Pause, Play,
-  Search, Settings as SettingsIcon, Square, Timer, Trophy, X, Download, RefreshCw,
+  Camera, ClipboardList, Crosshair, Film, FlaskConical, FolderOpen, History as HistoryIcon, Home as HomeIcon, Pause, Play,
+  Search, Settings as SettingsIcon, Timer, Trophy, X, Download, RefreshCw,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Banner, Button, IconButton, TONE_ICON, cx } from "./ui";
@@ -16,20 +16,14 @@ export function Page({ children, className }: { children: React.ReactNode; class
   return <div className={cx("screen-in mx-auto w-full px-10 pb-12 pt-8", !/max-w-/.test(className ?? "") && "max-w-[1040px]", className)}>{children}</div>;
 }
 
+// Status strip under the native Windows title bar (the shell uses a real frame so Snap works).
 export function TitleBar({ status }: { status?: Status }) {
-  const [hasShell, setHasShell] = React.useState(() => !!window.pywebview);
-  React.useEffect(() => {
-    const on = () => setHasShell(!!window.pywebview);
-    window.addEventListener("pywebviewready", on);
-    return () => window.removeEventListener("pywebviewready", on);
-  }, []);
   const cap = status?.capture;
   const state = !cap ? "Connecting" : !cap.available || cap.error ? "Capture unavailable" : cap.paused ? "Capture paused" : "Capture ready";
   const dot = !cap ? "bg-faint" : !cap.available || cap.error || cap.paused ? "bg-danger" : "bg-good";
-  const w = window.pywebview?.api;
   return (
     <div className="flex h-10 shrink-0 items-stretch border-b border-line bg-canvas">
-      <div className="pywebview-drag-region flex flex-1 items-center gap-2.5 pl-4">
+      <div className="flex flex-1 items-center gap-2.5 pl-4">
         <Crosshair size={15} className="text-accent-soft" aria-hidden />
         <span className="text-sm font-semibold tracking-[-0.01em] text-text">Sensfinder</span>
         {status && <span className="num text-xs text-muted">v{status.version}</span>}
@@ -39,55 +33,8 @@ export function TitleBar({ status }: { status?: Status }) {
         <span>{state}</span>
         {cap && cap.packet_rate > 0 && !cap.paused && <span className="num">· {Math.round(cap.packet_rate)}/s</span>}
       </div>
-      {hasShell && <ResizeGrips />}
-      {hasShell && (
-        <div className="no-drag flex items-stretch">
-          <button aria-label="Minimize" className="flex w-11 items-center justify-center text-muted hover:bg-s2 hover:text-text" onClick={() => w?.minimize?.()}><Minus size={15} aria-hidden /></button>
-          <button aria-label="Maximize" className="flex w-11 items-center justify-center text-muted hover:bg-s2 hover:text-text" onClick={() => w?.toggle_maximize?.()}><Square size={12} aria-hidden /></button>
-          <button aria-label="Close" className="flex w-11 items-center justify-center text-muted hover:bg-danger hover:text-white" onClick={() => w?.close?.()}><X size={15} aria-hidden /></button>
-        </div>
-      )}
     </div>
   );
-}
-
-// A frameless WebView2 window has no native resize border, so the page draws its own grips on the edges
-// and asks the shell to resize. The opposite edge stays put (the shell fixes it).
-const GRIPS: { edge: string; cls: string; cursor: string }[] = [
-  { edge: "n", cls: "left-3 right-3 top-0 h-1.5", cursor: "ns-resize" },
-  { edge: "s", cls: "left-3 right-3 bottom-0 h-1.5", cursor: "ns-resize" },
-  { edge: "w", cls: "top-3 bottom-3 left-0 w-1.5", cursor: "ew-resize" },
-  { edge: "e", cls: "top-3 bottom-3 right-0 w-1.5", cursor: "ew-resize" },
-  { edge: "nw", cls: "left-0 top-0 size-3", cursor: "nwse-resize" },
-  { edge: "ne", cls: "right-0 top-0 size-3", cursor: "nesw-resize" },
-  { edge: "sw", cls: "left-0 bottom-0 size-3", cursor: "nesw-resize" },
-  { edge: "se", cls: "right-0 bottom-0 size-3", cursor: "nwse-resize" },
-];
-const MIN_W = 1100, MIN_H = 700;
-
-function ResizeGrips() {
-  const start = (edge: string) => (e: React.PointerEvent<HTMLDivElement>) => {
-    const resize = window.pywebview?.api?.resize;
-    if (e.button !== 0 || !resize) return;
-    e.preventDefault();
-    const el = e.currentTarget, x0 = e.screenX, y0 = e.screenY, w0 = window.outerWidth, h0 = window.outerHeight;
-    let frame = 0, want: [number, number] | null = null;
-    el.setPointerCapture(e.pointerId);
-    const move = (ev: PointerEvent) => {
-      const dx = ev.screenX - x0, dy = ev.screenY - y0;
-      const w = edge.includes("e") ? w0 + dx : edge.includes("w") ? w0 - dx : w0;
-      const h = edge.includes("s") ? h0 + dy : edge.includes("n") ? h0 - dy : h0;
-      want = [Math.max(MIN_W, Math.round(w)), Math.max(MIN_H, Math.round(h))];
-      if (!frame) frame = requestAnimationFrame(() => { frame = 0; if (want) resize(want[0], want[1], edge); });
-    };
-    const up = () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerup", up);
-  };
-  return <>{GRIPS.map((g) => (
-    <div key={g.edge} aria-hidden className={cx("no-drag fixed z-[100]", g.cls)} style={{ cursor: g.cursor }}
-         onPointerDown={start(g.edge)} />
-  ))}</>;
 }
 
 export const NAV: { name: RouteName; label: string; icon: React.ComponentType<any>; tag?: string; group: 0 | 1 | 2 }[] = [

@@ -50,32 +50,31 @@ def single_instance() -> bool:
     return ctypes.windll.kernel32.GetLastError() != 183          # ERROR_ALREADY_EXISTS
 
 
-class WindowApi:
-    """Exposed to the page as window.pywebview.api for the custom title bar."""
+WS_THICKFRAME, WS_MAXIMIZEBOX = 0x00040000, 0x00010000
 
-    # pywebview walks every public attribute of this object to build the JS bridge. A public reference
-    # to the window makes it recurse into the window and freeze the process, so state is underscore-private.
-    def __init__(self):
-        self._window = None
-        self._maximized = False
 
-    def minimize(self):
-        self._window.minimize()
+def hwnd_of(window) -> int:
+    return int(window.native.Handle.ToInt64())
 
-    def toggle_maximize(self):
-        self._window.restore() if self._maximized else self._window.maximize()
-        self._maximized = not self._maximized
 
-    def close(self):
-        self._window.destroy()
+def dark_frame(window) -> None:
+    """Native Windows frame (so Snap, Win+arrows and snap layouts work), tinted to match the app.
+    Dark mode works on Windows 10 and 11; the exact caption colours are Windows 11 only and fail quietly elsewhere."""
+    if sys.platform != "win32":
+        return
+    dwm, hwnd = ctypes.windll.dwmapi, hwnd_of(window)
+    for attr, value in ((20, 1),               # DWMWA_USE_IMMERSIVE_DARK_MODE
+                        (35, 0x000E0C0B),      # DWMWA_CAPTION_COLOR  #0B0C0E (COLORREF is 0x00BBGGRR)
+                        (36, 0x00F7F4F2),      # DWMWA_TEXT_COLOR     #F2F4F7
+                        (34, 0x002D2723)):     # DWMWA_BORDER_COLOR   #23272D
+        v = ctypes.c_int(value)
+        dwm.DwmSetWindowAttribute(hwnd, attr, ctypes.byref(v), ctypes.sizeof(v))
 
-    def resize(self, width, height, edge="se"):
-        """Drag-resize from the page's edge grips (a frameless window has no native border).
-        Dragging the left or top edge keeps the right or bottom edge where it is."""
-        from webview.window import FixPoint
-        fix = (FixPoint.EAST if "w" in edge else FixPoint.WEST) | (FixPoint.SOUTH if "n" in edge else FixPoint.NORTH)
-        self._window.resize(max(1100, int(width)), max(700, int(height)), fix)
-        self._maximized = False
+
+def snap_ready(window) -> bool:
+    """Snap needs a sizable, maximizable native frame."""
+    style = ctypes.windll.user32.GetWindowLongW(hwnd_of(window), -16)     # GWL_STYLE
+    return bool(style & WS_THICKFRAME and style & WS_MAXIMIZEBOX)
 
 
 def start_tray(engine: Engine, window):
@@ -159,13 +158,19 @@ def main() -> int:
     import webview
     engine = Engine()
     server, _, port, _token = serve(engine, UI_DIR)
-    api = WindowApi()
-    window = webview.create_window("Sensfinder", f"http://127.0.0.1:{port}/", js_api=api, width=1280, height=800,
-                                   min_size=(1100, 700), frameless=True, easy_drag=False,
-                                   background_color="#0B0C0E")
-    api._window = window
+    # Native frame on purpose: a frameless window loses Windows Snap, Win+arrow keys and snap layouts.
+    window = webview.create_window("Sensfinder", f"http://127.0.0.1:{port}/", width=1280, height=800,
+                                   min_size=(1100, 700), background_color="#0B0C0E")
     tray = {}
-    window.events.shown += lambda: tray.setdefault("icon", start_tray(engine, window))
+
+    def on_shown():
+        try:
+            dark_frame(window)
+        except Exception:                         # cosmetic only
+            pass
+        tray.setdefault("icon", start_tray(engine, window))
+
+    window.events.shown += on_shown
     if "--window-check" in sys.argv:              # build check: open the real window, prove the UI is alive, close
         out = sys.argv[sys.argv.index("--window-check") + 1]
 
@@ -179,14 +184,8 @@ def main() -> int:
                     json.load(urllib.request.urlopen(req, timeout=5))             # noqa: S310 - localhost
                     text = window.evaluate_js("document.querySelector('main') ? document.querySelector('main').innerText : ''")
                     if text and "Starting up" not in text and "Waiting for" not in text:
-                        result = {"ok": True, "screen": text.strip().splitlines()[0][:80],
-                                  "bridge": bool(window.evaluate_js("!!(window.pywebview && window.pywebview.api && window.pywebview.api.minimize)")),
-                                  "grips": window.evaluate_js("document.querySelectorAll('[style*=resize]').length")}
-                        before = window.evaluate_js("window.outerWidth")      # the edge grips' resize path works
-                        window.evaluate_js("window.pywebview.api.resize(window.outerWidth + 120, window.outerHeight, 'w')")
-                        time.sleep(1.0)
-                        result["resized"] = window.evaluate_js("window.outerWidth") - before
-                        result["ok"] = bool(result["bridge"] and result["grips"] == 8 and result["resized"] > 60)
+                        result = {"screen": text.strip().splitlines()[0][:80], "snap": snap_ready(window)}
+                        result["ok"] = result["snap"]
                         break
             except Exception as e:
                 result["error"] = repr(e)

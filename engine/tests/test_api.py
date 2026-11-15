@@ -1,4 +1,4 @@
-﻿"""API, storage, beta migration, Demo-mode session end to end, recompute-from-trace."""
+"""API, storage, beta migration, Demo-mode session end to end, recompute-from-trace."""
 import hashlib
 import json
 import time

@@ -81,10 +81,6 @@ button:disabled { cursor: not-allowed; }
 /* quiet scrollbars */
 * { scrollbar-width: thin; scrollbar-color: #2b3037 transparent; }
 
-/* pywebview drag region: the class is what pywebview looks for; app-region covers other shells */
-.pywebview-drag-region { -webkit-app-region: drag; }
-.no-drag { -webkit-app-region: no-drag; }
-
 @keyframes sf-fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes sf-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sf-pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }

@@ -83,6 +83,11 @@ truth; these are the places where it left a choice open or two instructions pull
 
 ## App and packaging
 
+29a. **Native window frame, not frameless (changed in 1.0.2, against the spec).** The spec asked for a
+    frameless window with a custom title bar. On Windows that loses resizing, Windows Snap, Win+arrow keys
+    and snap layouts, which you use. The window now has the real Windows frame, tinted to the app's colours
+    with `DwmSetWindowAttribute` (exact colours need Windows 11), and the app's own bar below it is a
+    status strip only.
 29. **pywebview shell, per the spec.** The UI talks only to `http://127.0.0.1:<port>` with a per-launch
     token injected into `index.html`, so a Tauri shell can replace `shell/main.py` in v1.1 with no UI change.
 30. **One process.** The shell imports the engine and runs uvicorn on a thread. A separate sidecar process

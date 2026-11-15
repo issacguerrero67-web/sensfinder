@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to Sensfinder are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
@@ -7,7 +7,9 @@ All notable changes to Sensfinder are recorded here. The format follows
 ## [1.0.2] - 2026-11-14
 
 ### Fixed
-- The window couldn't be resized. A frameless window on Windows has no native resize border, so the app now draws its own grips on all four edges and corners.
+- The window couldn't be resized and didn't support Windows Snap (drag to a screen edge, Win+arrow keys,
+  snap layouts). The app now uses the native Windows frame, tinted dark to match, instead of a borderless
+  window with a custom title bar.
 
 ## [1.0.1] - 2026-11-14
 
