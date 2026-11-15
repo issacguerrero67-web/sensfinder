@@ -53,19 +53,21 @@ def single_instance() -> bool:
 class WindowApi:
     """Exposed to the page as window.pywebview.api for the custom title bar."""
 
+    # pywebview walks every public attribute of this object to build the JS bridge. A public reference
+    # to the window makes it recurse into the window and freeze the process, so state is underscore-private.
     def __init__(self):
-        self.window = None
-        self.maximized = False
+        self._window = None
+        self._maximized = False
 
     def minimize(self):
-        self.window.minimize()
+        self._window.minimize()
 
     def toggle_maximize(self):
-        self.window.restore() if self.maximized else self.window.maximize()
-        self.maximized = not self.maximized
+        self._window.restore() if self._maximized else self._window.maximize()
+        self._maximized = not self._maximized
 
     def close(self):
-        self.window.destroy()
+        self._window.destroy()
 
 
 def start_tray(engine: Engine, window):
@@ -153,9 +155,31 @@ def main() -> int:
     window = webview.create_window("Sensfinder", f"http://127.0.0.1:{port}/", js_api=api, width=1280, height=800,
                                    min_size=(1100, 700), frameless=True, easy_drag=False,
                                    background_color="#0B0C0E")
-    api.window = window
+    api._window = window
     tray = {}
     window.events.shown += lambda: tray.setdefault("icon", start_tray(engine, window))
+    if "--window-check" in sys.argv:              # build check: open the real window, prove the UI is alive, close
+        out = sys.argv[sys.argv.index("--window-check") + 1]
+
+        def check():
+            result = {"ok": False}
+            try:
+                req = urllib.request.Request(f"http://127.0.0.1:{port}/api/status",
+                                             headers={"X-Sensfinder-Token": _token})
+                for _ in range(40):                # the page needs a moment to load and render
+                    time.sleep(0.5)
+                    json.load(urllib.request.urlopen(req, timeout=5))             # noqa: S310 - localhost
+                    text = window.evaluate_js("document.querySelector('main') ? document.querySelector('main').innerText : ''")
+                    if text and "Starting up" not in text and "Waiting for" not in text:
+                        result = {"ok": True, "screen": text.strip().splitlines()[0][:80],
+                                  "bridge": bool(window.evaluate_js("!!(window.pywebview && window.pywebview.api && window.pywebview.api.minimize)"))}
+                        break
+            except Exception as e:
+                result["error"] = repr(e)
+            Path(out).write_text(json.dumps(result), encoding="utf-8")
+            window.destroy()
+
+        window.events.loaded += lambda: threading.Thread(target=check, daemon=True).start()
     try:
         webview.start()
     finally:

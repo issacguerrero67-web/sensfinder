@@ -37,6 +37,21 @@ Write-Host "   $(Get-Content $check -Raw)"
 if (-not $result.ok) { throw "headless check failed" }
 Remove-Item $check
 
+# The headless check never opens a window. This one does: it loads the real UI in WebView2, waits for a
+# screen to render and the title-bar bridge to exist, then closes. Skipped where there is no desktop.
+if (-not $env:CI) {
+    Write-Host "== window check of the built exe"
+    $env:SENSFINDER_DATA_DIR = Join-Path $env:TEMP "sensfinder-wincheck-$PID"
+    $p = Start-Process -FilePath dist\Sensfinder\Sensfinder.exe -ArgumentList "--window-check", "`"$check`"" -PassThru
+    $done = $p.WaitForExit(90000)
+    Remove-Item Env:SENSFINDER_DATA_DIR
+    if (-not $done) { $p.Kill(); throw "the built exe's window never became ready (90 s)" }
+    if (-not (Test-Path $check)) { throw "the built exe wrote no window-check result" }
+    Write-Host "   $(Get-Content $check -Raw)"
+    if (-not (Get-Content $check -Raw | ConvertFrom-Json).ok) { throw "window check failed" }
+    Remove-Item $check
+}
+
 New-Item -ItemType Directory -Force release | Out-Null
 $zip = "release\Sensfinder-$version-portable.zip"
 Write-Host "== $zip"

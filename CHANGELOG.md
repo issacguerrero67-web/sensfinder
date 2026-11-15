@@ -4,6 +4,17 @@ All notable changes to Sensfinder are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-11-14
+
+### Fixed
+- The app window froze on "Starting up." and never loaded. The title-bar bridge exposed a reference to the
+  window, which made the WebView bridge recurse into it and lock the whole process. **1.0.0 does not start;
+  use this version.**
+- `pip install ".[dev]"` failed from a clean checkout (no package discovery in `pyproject.toml`).
+
+### Added
+- The build now opens the real window and waits for a screen to render before it will produce artifacts.
+
 ## [1.0.0] - 2026-11-14
 
 First desktop release. Replaces the Streamlit beta, which is kept unmodified in `legacy/`.
