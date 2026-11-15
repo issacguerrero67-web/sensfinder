@@ -297,7 +297,9 @@ class Session:
         notices = list(self.messages[-3:])
         if dropped and not self.finished:
             words = sorted({DROP_WORDS[b.priority] for b in dropped})
-            notices.append(f"Short on time, so I'm skipping {', '.join(words)}.")
+            notices.append("Leaving out the extra reps to stay inside the time budget. Change sens quickly and "
+                           "they come back." if words == ["extra reps"]
+                           else f"Short on time, so I'm skipping {', '.join(words)}.")
         return {
             "tier": self.tier, "tier_label": TIERS[self.tier]["label"], "demo": self.demo, "game": self.game,
             "budget_s": TIERS[self.tier]["budget"], "hard_cap_s": HARD_CAP, "elapsed_s": elapsed,

@@ -194,7 +194,8 @@ def serve(engine: Engine, ui_dir: Path | str | None, port: int | None = None, to
     port = port or free_port()
     token = token if token is not None else secrets.token_urlsafe(24)
     server = uvicorn.Server(uvicorn.Config(create_app(engine, token, ui_dir), host=HOST, port=port,
-                                           log_level="warning", access_log=False))
+                                           log_level="warning", access_log=False,
+                                           log_config=None))    # the windowed exe has no stdout to log to
     thread = threading.Thread(target=server.run, name="api", daemon=True)
     thread.start()
     return server, thread, port, token
